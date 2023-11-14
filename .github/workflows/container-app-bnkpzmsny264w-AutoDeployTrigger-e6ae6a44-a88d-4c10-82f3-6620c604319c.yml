@@ -1,0 +1,45 @@
+name: Trigger auto deployment for container-app-bnkpzmsny264w
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/container-app-bnkpzmsny264w-AutoDeployTrigger-e6ae6a44-a88d-4c10-82f3-6620c604319c.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CONTAINERAPPBNKPZMSNY264W_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTAINERAPPBNKPZMSNY264W_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTAINERAPPBNKPZMSNY264W_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: containerregistrybnkpzmsny264w.azurecr.io
+          registryUsername: ${{ secrets.CONTAINERAPPBNKPZMSNY264W_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPBNKPZMSNY264W_REGISTRY_PASSWORD }}
+          containerAppName: container-app-bnkpzmsny264w
+          resourceGroup: todonodejsmongo8763b19a
+          imageToBuild: containerregistrybnkpzmsny264w.azurecr.io/container-app-bnkpzmsny264w:${{ github.sha }}
+          
+
+
